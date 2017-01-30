@@ -42,149 +42,312 @@ THE SOFTWARE.
 } (this, function (jQuery) {
 
 
-	/*===========================================
-	Message dummy class
-	===========================================*/
+	/*=======================================================
+	Message field class
+	Description: show, hide form fields errors
+	=======================================================*/
 
-	var MessageDummy = function MessageDummy () {
+	var MessageField = function () {
 
-		this.show = function () {}
-		this.hide = function () {}
+		var _default = {
+
+			selector: 	'.alert',
+			template: 	'<div class="alert hidden"/>',
+			classes: 	'alert-danger',
+		};
+
+		var _view;
+		var _msgs;
+		var _opts;
+
+		var _opt = function (options) {
+
+			var options = options || {};
+			options.field = options.field || {};
+
+			_view = options.field.view || null;
+			_msgs = options.field.messages || {};
+			_opts = options.field;
+		};
+
+		var _cls = function () {
+
+			if ('classes' in _opts) {
+
+				return _opts.classes;
+			}
+
+			return _default.classes;
+		};
+
+		var _new = function (field) {
+
+			var $field = _view.$el.find('[name="' + field + '"]');
+
+			$field.after($(_default.template));
+
+			return $field.next();
+		};
+
+		var _get = function (field) {
+
+			return _view.$el.find('[name="' + field + '"]').next(_default.selector);
+		};
+
+		var _chk = function () {
+
+			if (!_view) {
+
+				console.error('Option `view` is not defined in MessageField check');
+				return false;
+			}
+
+			return true;
+		};
+
+		this.show = function (options) {
+
+			_opt(options);
+
+			if (!_chk()) {
+
+				return;
+			}
+
+			for (var property in _msgs) {
+
+				var $message = _get(property);
+
+				if (!$message.length) {
+
+					$message = _new(property);
+				}
+
+				$message.text(_msgs[property][0]);
+				$message.addClass(_cls());
+
+				if ($message.hasClass('hidden')) {
+
+					$message.removeClass('hidden');
+				}
+
+				if (!this.messages) {
+
+					this.messages = [];
+				}
+
+				this.messages.push($message);
+			}
+		}
+
+		this.hide = function () {
+
+			if (this.messages
+				&& this.messages.length) {
+
+				for (var i = 0, count = this.messages.length; i < count; i ++) {
+
+					var $message = this.messages.shift();
+					$message.addClass('hidden');
+				}
+			}
+		}
 	};
 
 
-	/*===========================================
-	Message form class
-	Description: class for showing input errors
-	---------------------------------------------
-	@view 		Marionette.View
-	===========================================*/
+	/*=======================================================
+	Message state class
+	Description: show, hide form state
+	=======================================================*/
 
-	var MessageForm = function MessageForm (view) {
+	var MessageState = function () {
 
-		var _class 		= 'alert';
-		var _template 	= $('<div class="alert alert-danger"/>');
+		var _default = {
 
-		var _view = view;
+			selector: 	'.alert',
+			template: 	'<div class="alert hidden"/>',
+			classes: 	'alert-danger',
+		};
 
-		var _getField = function (field) {
+		var _view;
+		var _text;
+		var _opts;
 
-			return _view.$el.find('[name="' + field + '"]');
-		}
+		var _opt = function (options) {
 
-		var _getMessage = function (field) {
+			var options = options || {};
+			options.state = options.state || {};
 
-			var $message = _getField(field).next('.' + _class);
+			_view = options.state.view || null;
+			_text = options.state.text || '';
+			_opts = options.state;
+		};
 
-			if ($message.length) {
+		var _cls = function () {
 
-				return $message;
+			if ('classes' in _opts) {
+
+				return _opts.classes;
 			}
 
-			return false;	
-		}
+			return _default.classes;
+		};
 
-		var _createMessage = function (field) {
+		var _new = function () {
 
-			_getField(field).after(_template);
+			var $form = _view.$el.find('form');
 
-			return _getMessage(field);
-		}
+			$form.before($(_default.template));
 
-		this.show = function (field, text) {
+			return $form.prev();
+		};
 
-			this.field 	= field;
-			this.text 	= text;
+		var _get = function () {
 
-			var $message = _getMessage(this.field);
+			return _view.$el.find('form').prev(_default.selector);
+		};
 
-			if (!$message) {
+		var _chk = function () {
 
-				$message = _createMessage(this.field);
+			if (!_view) {
+
+				console.error('Option `view` is not defined in MessageState check');
+				return false;
 			}
 
-			$message.text(this.text);
+			return true;
+		};
+
+		this.show = function (options) {
+
+			_opt(options);
+
+			if (!_chk()) {
+
+				return;
+			}
+
+			$message = _get();
+
+			if (!$message.length) {
+
+				$message = _new();
+			}
+
+			$message.text(_text);
+			$message.addClass(_cls());
 
 			if ($message.hasClass('hidden')) {
 
 				$message.removeClass('hidden');
 			}
+
+			this.message = $message;
 		}
 
 		this.hide = function () {
 
-			var $message = _getMessage(this.field);
-
-			$message.addClass('hidden');				
+			this.message.addClass('hidden');
 		}
 	};
 
 
-	/*===========================================
+	/*=======================================================
 	Message factory class
-	Description: show, hide messages by type
-	---------------------------------------------
-	@type 		string (one of `form`, `state`)
-	@options 	array (depends on type)
-	===========================================*/
+	Description: show, hide messages by types
+	---------------------------------------------------------
+	@types 		array (it can be `state`, `field` or `float`)
+	=======================================================*/
 
-	var MessageFactory = function MessageFactory (type, options) {
+	var MessageFactory = function (types) {
 
-		var _messages = [];
+		var _types 		= types || [];
+		var _instances 	= {}; 
 
-		this.type 		= type;
-		this.options 	= options || {}; 
+		var _emp = function (object) {
 
-		this.getMessageObject = function () {
+			for (var property in object) {
 
-			switch (this.type) {
+				if (object.hasOwnProperty(property)) return false;
+			}
 
-				case 'form':
+			return true;
+		};
 
-					if (!('view' in this.options)) {
+		var _new = function (type) {
 
-						console.error('`View` option is not defined');
-						return new MessageDummy();
-					}
+			var instance = null;
 
-					return new MessageForm(this.options.view);
+			switch (type) {
 
+				case 'state':
+					instance = new MessageState();
 				break;
-			} 
-		}
 
-		this.show = function (messages) {
+				case 'field':
+					instance = new MessageField();
+				break;
 
-			if (_messages.length) {
-
-				this.hide();
+				case 'float':
+					instance = new MessageFloat();
+				break;
 			}
 
-			for (var key in messages) {
+			_instances[type] = instance;
 
-				if (!messages.hasOwnProperty(key)) continue;
+			return _instances[type];
+		};
 
-				var messageObj = this.getMessageObject();
-				messageObj.show(key, messages[key][0]);
+		var _get = function (type) {
 
-				_messages.push(messageObj);
+			if (_instances.hasOwnProperty(type)) {
+
+				return _instances[type];
 			}
-		}
 
-		this.hide = function () {
+			return _new(type);
+		};
 
-			if (!_messages.length) {
+		var _chk = function () {
+
+			if (!_types.length) {
+
+				console.error('Option `types`is not defined in MessageFactory constructor');
+				return false;
+			}
+
+			return true;
+		};
+
+		this.show = function (options) {
+
+			if (!_chk()) {
 
 				return;
 			}
 
-			for (var i = 0, count = _messages.length; i < count; i ++) {
+			if (!_emp(_instances)) {
 
-				var messageObj = _messages.shift();
-				messageObj.hide();
+				this.hide();
+			}
+
+			for (var i = 0, count = _types.length; i < count; i ++) {
+
+				var messageobj = _get(_types[i]);
+				messageobj.show(options);
+			}
+		}
+
+		this.hide = function () {
+
+			for (var property in _instances) {
+
+				var messageobj = _instances[property];
+				messageobj.hide();
 			}
 		}
 	};
+
 
 	var Minimal = {};
 
