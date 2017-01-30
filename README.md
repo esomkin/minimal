@@ -38,6 +38,8 @@ this.message.show({
 	},
 });
 
+this.message.hide();
+
 ```
 
 Change Log
