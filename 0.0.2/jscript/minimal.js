@@ -28,23 +28,98 @@ THE SOFTWARE.
 
 	if (typeof define === 'function' && define.amd) {
 
-		define(['jquery'], factory);
+		define(['jquery', 'bootstrap.notify'], factory);
 
 	} else if (typeof exports === 'object') {
 
-		module.exports = factory(require('jquery'));
+		module.exports = factory(require('jquery'), require('bootstrap.notify'));
 
 	} else {
 
-		root.returnExports = factory(root.jQuery);
+		root.returnExports = factory(root.jQuery, root.bootstrapNotify);
 	}
 
-} (this, function (jQuery) {
+} (this, function (jQuery, bootstrapNotify) {
+
+
+	/*=======================================================
+	Message float class
+	Description: show, hide float messages
+	=======================================================*/
+
+	var MessageFloat = function () {
+
+		var _default = {
+
+			position: 'fixed',
+			type: 'danger',
+			placement: {
+
+				from: 'bottom',
+				align: 'right',
+			},
+			delay: 5000,
+			timer: 1000,
+		};
+
+		var _msgs;
+		var _opts;
+
+		var _opt = function (options) {
+
+			var options = options || {};
+			options.float = options.float || {};
+
+			_msgs = options.float.messages || {};
+			_opts = options.float;
+		};
+
+		var _mrg = function () {
+
+			var options = {};
+
+			for (var property in _default) {
+
+				var value = _default[property];
+
+				if (property in _opts) {
+
+					value = _opts[property]
+				}
+
+				options[property] = value;
+			}
+
+			return options;
+		};
+
+		this.show = function (options) {
+
+			_opt(options);
+
+			for (var property in _msgs) {
+
+				$.notify({
+
+					message: _msgs[property],
+					
+				}, _mrg());
+			}
+		}
+
+		this.hide = function () {
+
+			// Noop
+		}
+	};
 
 
 	/*=======================================================
 	Message field class
-	Description: show, hide form fields errors
+	Description: show, hide form fields messages
+	---------------------------------------------------------
+	Depends on Bootstrap Notify 
+	https://github.com/mouse0270/bootstrap-notify
 	=======================================================*/
 
 	var MessageField = function () {
@@ -157,7 +232,7 @@ THE SOFTWARE.
 
 	/*=======================================================
 	Message state class
-	Description: show, hide form state
+	Description: show, hide form state messages
 	=======================================================*/
 
 	var MessageState = function () {
