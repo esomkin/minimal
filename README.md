@@ -1,4 +1,4 @@
-# Minimal package
+Minimal package
 =========================
 
 *By Evgeniy Somkin*
@@ -8,8 +8,9 @@
 Overview
 --------
 
-This class makes messages showing more simply. The examples are the 
-best way to learn how to use it, but here it is in a nutshell
+This package include classes, that makes messages showing more simply. 
+The examples are the best way to learn how to use it, but here it is 
+in a nutshell
 
 ```javascript
 
