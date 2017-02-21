@@ -463,6 +463,19 @@ THE SOFTWARE.
 
 		var $load = Loading._get();
 
+		if (Loading.timer) {
+
+			clearTimeout(Loading.timer);
+			Loading.timer = null;
+
+			if (!$load.hasClass('hidden')) {
+
+				$load.toggleClass('hidden');
+			}
+
+			return;
+		}
+
 		if ($load.hasClass('hidden')) {
 
 			Loading.timer = setTimeout(function () {
@@ -470,21 +483,6 @@ THE SOFTWARE.
 				$load.toggleClass('hidden');
 
 			}, Loading._default.delay);
-
-			return;
-		}
-
-		if (!$load.hasClass('hidden')) {
-
-			if (Loading.timer) {
-
-				clearTimeout(Loading.timer);
-				Loading.timer = null;
-			}
-
-			$load.toggleClass('hidden');
-
-			return;	
 		}
 	};
 
