@@ -47,6 +47,7 @@ THE SOFTWARE.
 	Description: show, hide float messages
 	=======================================================*/
 
+	/*
 	var MessageFloat = function () {
 
 		var _default = {
@@ -55,14 +56,15 @@ THE SOFTWARE.
 			type: 'danger',
 			placement: {
 
-				from: 'bottom',
-				align: 'right',
+				from: 'top',
+				align: 'center',
 			},
 			offset: 0,
 			spacing: 0,
 			delay: 5000,
 			timer: 1000,
-			allow_dismiss: true,
+			allow_dismiss: false,
+			newest_on_top: true,
 		};
 
 		var _msgs;
@@ -115,6 +117,78 @@ THE SOFTWARE.
 			// Noop
 		}
 	};
+	*/
+
+	var MessageFloat = function () {
+
+	};
+
+	MessageFloat._default = {
+
+		position: 'fixed',
+		type: 'danger',
+		placement: {
+
+			from: 'top',
+			align: 'center',
+		},
+		offset: 0,
+		spacing: 0,
+		delay: 5000,
+		timer: 1000,
+		allow_dismiss: false,
+		newest_on_top: true,
+	};
+
+	MessageFloat._msgs;
+	MessageFloat._opts;
+
+	MessageFloat._opt = function (options) {
+
+		var options = options || {};
+		options.float = options.float || {};
+
+		this._msgs = options.float.messages || {};
+		this._opts = options.float;
+	};
+
+	MessageFloat._mrg = function () {
+
+		var options = {};
+
+		for (var property in this._default) {
+
+			var value = this._default[property];
+
+			if (property in this._opts) {
+
+				value = this._opts[property]
+			}
+
+			options[property] = value;
+		}
+
+		return options;
+	};
+
+	MessageFloat.show = function (options) {
+
+		this._opt(options);
+
+		for (var property in this._msgs) {
+
+			$.notify({
+
+				message: this._msgs[property],
+					
+			}, this._mrg());
+		}
+	}
+
+	MessageFloat.hide = function () {
+
+		// Noop
+	}
 
 
 	/*=======================================================
@@ -125,6 +199,7 @@ THE SOFTWARE.
 	https://github.com/mouse0270/bootstrap-notify
 	=======================================================*/
 
+	/*
 	var MessageField = function () {
 
 		var _default = {
@@ -241,6 +316,122 @@ THE SOFTWARE.
 			}
 		}
 	};
+	*/
+
+	var MessageField = function () {
+
+	};
+
+	MessageField._default = {
+
+		selector: 	'.alert',
+		template: 	'<div class="alert hidden"/>',
+		classes: 	'alert-danger',
+	};
+
+	MessageField._view;
+	MessageField._msgs;
+	MessageField._opts;
+
+	MessageField.messages = [];
+
+	MessageField._opt = function (options) {
+
+		var options = options || {};
+		options.field = options.field || {};
+
+		this._view = options.field.view || null;
+		this._msgs = options.field.messages || {};
+		this._opts = options.field;
+	};
+
+	MessageField._cls = function () {
+
+		if ('classes' in this._opts) {
+
+			return this._opts.classes;
+		}
+
+		return this._default.classes;
+	};
+
+	MessageField._new = function (field) {
+
+		var $field = this._view.$el.find('[name="' + field + '"]');
+
+		$field.after($(this._default.template));
+
+		return $field.next();
+	};
+
+	MessageField._get = function (field) {
+
+		return this._view.$el.find('[name="' + field + '"]').next(this._default.selector);
+	};
+
+	MessageField._chk = function () {
+
+		if (!this._view) {
+
+			console.error('Option `view` is not defined');
+			return false;
+		}
+
+		return true;
+	};
+
+	MessageField.show = function (options) {
+
+		this._opt(options);
+
+		if (!this._chk()) {
+
+			return;
+		}
+
+		for (var property in this._msgs) {
+
+			var $message = this._get(property);
+
+			if (!$message.length) {
+
+				$message = this._new(property);
+			}
+
+			$message.text(this._msgs[property][0]);
+			$message.addClass(this._cls());
+
+			if ($message.hasClass('hidden')) {
+
+				$message.removeClass('hidden');
+			}
+
+			var $parent = $message.parent();
+
+			if (!$parent.hasClass('has-error')) {
+
+				$parent.addClass('has-error');
+			}
+
+			this.messages.push($message);
+		}
+	};
+
+	MessageField.hide = function () {
+
+		if (this.messages
+			&& this.messages.length) {
+
+			for (var i = 0, count = this.messages.length; i < count; i ++) {
+
+				var $message = this.messages.shift();
+				$message.addClass('hidden');
+
+				var $parent = $message.parent();
+				$parent.removeClass('has-error');
+			}
+		}
+	};
 
 
 	/*=======================================================
@@ -248,6 +439,7 @@ THE SOFTWARE.
 	Description: show, hide form state messages
 	=======================================================*/
 
+	/*
 	var MessageState = function () {
 
 		var _default = {
@@ -338,15 +530,111 @@ THE SOFTWARE.
 			this.message.addClass('hidden');
 		}
 	};
+	*/
+
+	var MessageState = function () {
+
+	};
+
+	MessageState._default = {
+
+		selector: 	'.alert',
+		template: 	'<div class="alert hidden"/>',
+		classes: 	'alert-danger',
+	};
+
+	MessageState._view;
+	MessageState._text;
+	MessageState._opts;
+
+	MessageState.message;
+
+	MessageState._opt = function (options) {
+
+		var options = options || {};
+		options.state = options.state || {};
+
+		this._view = options.state.view || null;
+		this._text = options.state.text || '';
+		this._opts = options.state;
+	};
+
+	MessageState._cls = function () {
+
+		if ('classes' in this._opts) {
+
+			return this._opts.classes;
+		}
+
+		return this._default.classes;
+	};
+
+	MessageState._new = function () {
+
+		var $form = this._view.$el.find('form');
+
+		$form.before($(this._default.template));
+
+		return $form.prev();
+	};
+
+	MessageState._get = function () {
+
+		return this._view.$el.find('form').prev(this._default.selector);
+	};
+
+	MessageState._chk = function () {
+
+		if (!this._view) {
+
+			console.error('Option `view` is not defined');
+			return false;
+		}
+
+		return true;
+	};
+
+	MessageState.show = function (options) {
+
+		this._opt(options);
+
+		if (!this._chk()) {
+
+			return;
+		}
+
+		$message = this._get();
+
+		if (!$message.length) {
+
+			$message = this._new();
+		}
+
+		$message.text(this._text);
+		$message.addClass(this._cls());
+
+		if ($message.hasClass('hidden')) {
+
+			$message.removeClass('hidden');
+		}
+
+		this.message = $message;
+	}
+
+	MessageState.hide = function () {
+
+		this.message.addClass('hidden');
+	}
 
 
 	/*=======================================================
 	Message factory class
 	Description: show, hide messages by types
 	---------------------------------------------------------
-	@types 		array (it can be `state`, `field` or `float`)
+	@types 		array (can be `state`, `field` or `float`)
 	=======================================================*/
 
+	/*
 	var MessageFactory = function (types) {
 
 		var _types 		= types || [];
@@ -435,7 +723,108 @@ THE SOFTWARE.
 			}
 		}
 	};
+	*/
 
+	var MessageFactory = function () {
+
+	};
+
+	MessageFactory._types = [];
+	MessageFactory._instances = {};
+
+	MessageFactory._emp = function (object) {
+
+		for (var property in object) {
+
+			if (object.hasOwnProperty(property)) return false;
+		}
+
+		return true;
+	};
+
+	MessageFactory._new = function (type) {
+
+		var instance = null;
+
+		switch (type) {
+
+			case 'state':
+				instance = MessageState;
+			break;
+
+			case 'field':
+				instance = MessageField;
+			break;
+
+			case 'float':
+				instance = MessageFloat;
+			break;
+		}
+
+		this._instances[type] = instance;
+
+		return this._instances[type];
+	};
+
+	MessageFactory._get = function (type) {
+
+		if (this._instances.hasOwnProperty(type)) {
+
+			return this._instances[type];
+		}
+		
+		return this._new(type);
+	};
+
+	MessageFactory._chk = function (types) {
+
+		if (!(Object.prototype.toString.call(types) === '[object Array]')) {
+
+			console.error('Option `types` must by an array');
+			return false;
+		}
+
+		if (!types.length) {
+
+			console.error('Option `types` cannot be empty');
+			return false;
+		}
+
+		return true;
+	};
+
+	MessageFactory.show = function (types, options) {
+
+		if (!this._chk(types)) {
+
+			return;	
+		}
+
+		this._types = types;
+
+		if (!this._emp(this._instances)) {
+
+			this.hide();
+		}
+
+		for (var i = 0, count = this._types.length; i < count; i ++) {
+
+			var message = this._get(this._types[i]);
+			
+			message.show(options);
+		}
+	};
+
+	MessageFactory.hide = function () {
+
+		for (var property in this._instances) {
+
+			var message = this._instances[property];
+			
+			message.hide();
+		}
+	};
+	
 
 	/*=======================================================
 	Loading class
@@ -446,27 +835,27 @@ THE SOFTWARE.
 
 	};
 
-	Loading.timer = null;
-
 	Loading._default = {
 
 		selector: '.component-load',
 		delay: 500,
 	};
 
+	Loading._timer = null;
+
 	Loading._get = function () {
 
-		return $(Loading._default.selector);
+		return $(this._default.selector);
 	};
 
 	Loading.toggle = function () {
 
-		var $load = Loading._get();
+		var $load = this._get();
 
-		if (Loading.timer) {
+		if (this._timer) {
 
-			clearTimeout(Loading.timer);
-			Loading.timer = null;
+			clearTimeout(this._timer);
+			this._timer = null;
 
 			if (!$load.hasClass('hidden')) {
 
@@ -478,12 +867,29 @@ THE SOFTWARE.
 
 		if ($load.hasClass('hidden')) {
 
-			Loading.timer = setTimeout(function () {
+			this._timer = setTimeout(function () {
 
 				$load.toggleClass('hidden');
 
-			}, Loading._default.delay);
+			}, this._default.delay);
 		}
+	};
+
+
+	/*=======================================================
+	Locale class
+	Description: get, set locale by url
+	=======================================================*/
+
+	var Locale = function () {
+
+	};
+
+	Locale._default = {
+
+		locales: [],
+		locale: null,
+		fallback: '',
 	};
 
 
@@ -491,6 +897,7 @@ THE SOFTWARE.
 
 	Minimal.Message = MessageFactory;
 	Minimal.Loading = Loading;
+	Minimal.Locale 	= Locale;
 
 	return Minimal;
 }));
