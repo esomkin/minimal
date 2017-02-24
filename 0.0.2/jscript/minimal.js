@@ -890,13 +890,14 @@ THE SOFTWARE.
 		locales: [
 
 			'en',
+			'ch',
 		],
 		fallback: 'en',
 	};
 
 	Locale._locale = null;
 
-	Locale._parse = function (url) {
+	Locale._prs = function (url) {
 
 		if (!url) {
 
@@ -914,9 +915,9 @@ THE SOFTWARE.
 			return false;
 		}
 
-		if (!this._default.locales.indexOf(locale)) {
+		if (!(this._default.locales.indexOf(locale) + 1)) {
 
-			console.error('Option `locale` is not defined in default locales');
+			console.error('Option `locale` value is not defined in default locales');
 			return false;
 		}
 
@@ -931,15 +932,19 @@ THE SOFTWARE.
 			return this._locale;
 		}
 
-		var uri = this._parse(url);
+		var uri = this._prs(url);
 		var part = uri.segment(0);
 
-		if (this._default.locales.indexOf(part)) {
+		if (this._default.locales.indexOf(part) + 1) {
 
-			return part;
+			this._locale = part;
+			
+		} else {
+
+			this._locale = this._default.fallback;
 		}
 
-		return this._default.fallback;
+		return this._locale;
 	};
 
 	Locale.set = function (locale, url) {
@@ -951,10 +956,35 @@ THE SOFTWARE.
 
 		this._locale = locale;
 
-		var uri = this._parse(url);
-		uri.segment(0) = this._locale;
+		var uri = this._prs(url);
+		var part = uri.segment(0);
 
-		return uri.toString();
+		if (this._locale != this._default.fallback) {
+
+			if (this._default.locales.indexOf(part) + 1) {
+
+				uri.segment(0, this._locale);
+
+			} else {
+
+				var segment = uri.segment();
+				segment.unshift(this._locale);
+
+				uri.segment(segment);
+			}
+
+		} else {
+
+			if (this._default.locales.indexOf(part) + 1) {
+
+				var segment = uri.segment();
+				segment.shift();
+
+				uri.segment(segment);
+			}
+		}
+
+		location.href = uri.toString();
 	};
 
 
