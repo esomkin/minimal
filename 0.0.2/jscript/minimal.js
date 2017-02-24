@@ -28,18 +28,18 @@ THE SOFTWARE.
 
 	if (typeof define === 'function' && define.amd) {
 
-		define(['jquery', 'bootstrap.notify'], factory);
+		define(['jquery', 'bootstrap.notify', 'uri', ], factory);
 
 	} else if (typeof exports === 'object') {
 
-		module.exports = factory(require('jquery'), require('bootstrap.notify'));
+		module.exports = factory(require('jquery'), require('bootstrap.notify'), require('uri'));
 
 	} else {
 
-		root.returnExports = factory(root.jQuery, root.bootstrapNotify);
+		root.returnExports = factory(root.jQuery, root.bootstrapNotify, root.URI);
 	}
 
-} (this, function (jQuery, bootstrapNotify) {
+} (this, function (jQuery, bootstrapNotify, URI) {
 
 
 	/*=======================================================
@@ -887,9 +887,74 @@ THE SOFTWARE.
 
 	Locale._default = {
 
-		locales: [],
-		locale: null,
-		fallback: '',
+		locales: [
+
+			'en',
+		],
+		fallback: 'en',
+	};
+
+	Locale._locale = null;
+
+	Locale._parse = function (url) {
+
+		if (!url) {
+
+			return new URI();
+		}
+
+		return new URI(url);
+	};
+
+	Locale._chk = function (locale) {
+
+		if (!locale) {
+
+			console.error('Option `locale` cannot be empty');
+			return false;
+		}
+
+		if (!this._default.locales.indexOf(locale)) {
+
+			console.error('Option `locale` is not defined in default locales');
+			return false;
+		}
+
+		return true;
+	};
+
+	Locale.get = function (url) {
+
+		if (!url
+			&& this._locale) {
+
+			return this._locale;
+		}
+
+		var uri = this._parse(url);
+		var part = uri.segment(0);
+
+		if (this._default.locales.indexOf(part)) {
+
+			return part;
+		}
+
+		return this._default.fallback;
+	};
+
+	Locale.set = function (locale, url) {
+
+		if (!this._chk(locale)) {
+
+			return;
+		}
+
+		this._locale = locale;
+
+		var uri = this._parse(url);
+		uri.segment(0) = this._locale;
+
+		return uri.toString();
 	};
 
 
