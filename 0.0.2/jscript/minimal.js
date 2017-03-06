@@ -467,6 +467,7 @@ THE SOFTWARE.
 	var Minimal = {};
 
 	Minimal.Message = MessageFactory;
+	Minimal.Loading = Loading;
 
 	return Minimal;
 }));
