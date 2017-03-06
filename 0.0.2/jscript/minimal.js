@@ -672,33 +672,6 @@ THE SOFTWARE.
 	};
 
 
-	/*=======================================================
-	Loading class
-	Description: show, hide load indicator
-	=======================================================*/
-
-	var Loading = function () {
-
-	};
-
-	Loading._default = {
-
-		selector: '.component-load',
-	};
-
-	Loading._get = function () {
-
-		return $(Loading._default.selector);
-	};
-
-	Loading.toggle = function () {
-
-		var $load = Loading._get();
-
-		$load.toggleClass('hidden');
-	};
-
-
 	var Minimal = {};
 
 	Minimal.Message = MessageFactory;
