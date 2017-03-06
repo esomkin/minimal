@@ -58,8 +58,11 @@ THE SOFTWARE.
 				from: 'bottom',
 				align: 'right',
 			},
+			offset: 0,
+			spacing: 0,
 			delay: 5000,
 			timer: 1000,
+			allow_dismiss: true,
 		};
 
 		var _msgs;
@@ -206,6 +209,13 @@ THE SOFTWARE.
 					$message.removeClass('hidden');
 				}
 
+				var $parent = $message.parent();
+
+				if (!$parent.hasClass('has-error')) {
+
+					$parent.addClass('has-error');
+				}
+
 				if (!this.messages) {
 
 					this.messages = [];
@@ -224,6 +234,9 @@ THE SOFTWARE.
 
 					var $message = this.messages.shift();
 					$message.addClass('hidden');
+
+					var $parent = $message.parent();
+					$parent.removeClass('has-error');
 				}
 			}
 		}
@@ -421,6 +434,33 @@ THE SOFTWARE.
 				messageobj.hide();
 			}
 		}
+	};
+
+
+	/*=======================================================
+	Loading class
+	Description: show, hide load indicator
+	=======================================================*/
+
+	var Loading = function () {
+
+	};
+
+	Loading._default = {
+
+		selector: '.component-load',
+	};
+
+	Loading._get = function () {
+
+		return $(Loading._default.selector);
+	};
+
+	Loading.toggle = function () {
+
+		var $load = Loading._get();
+
+		$load.toggleClass('hidden');
 	};
 
 
