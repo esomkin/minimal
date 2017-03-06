@@ -52,7 +52,25 @@ THE SOFTWARE.
 
 	var MessageFloat = function () {
 
+<<<<<<< HEAD
+		var _default = {
+
+			position: 'fixed',
+			type: 'danger',
+			placement: {
+
+				from: 'bottom',
+				align: 'right',
+			},
+			offset: 0,
+			spacing: 0,
+			delay: 5000,
+			timer: 1000,
+			allow_dismiss: true,
+		};
+=======
 	};
+>>>>>>> origin/master
 
 	MessageFloat._default = {
 
@@ -213,7 +231,18 @@ THE SOFTWARE.
 				$message.removeClass('hidden');
 			}
 
+<<<<<<< HEAD
+				var $parent = $message.parent();
+
+				if (!$parent.hasClass('has-error')) {
+
+					$parent.addClass('has-error');
+				}
+
+				if (!this.messages) {
+=======
 			var $parent = $message.parent();
+>>>>>>> origin/master
 
 			if (!$parent.hasClass('has-error')) {
 
@@ -234,8 +263,17 @@ THE SOFTWARE.
 				var $message = this.messages.shift();
 				$message.addClass('hidden');
 
+<<<<<<< HEAD
+					var $message = this.messages.shift();
+					$message.addClass('hidden');
+
+					var $parent = $message.parent();
+					$parent.removeClass('has-error');
+				}
+=======
 				var $parent = $message.parent();
 				$parent.removeClass('has-error');
+>>>>>>> origin/master
 			}
 		}
 	};
@@ -672,12 +710,46 @@ THE SOFTWARE.
 	};
 
 
+	/*=======================================================
+	Loading class
+	Description: show, hide load indicator
+	=======================================================*/
+
+	var Loading = function () {
+
+	};
+
+	Loading._default = {
+
+		selector: '.component-load',
+	};
+
+	Loading._get = function () {
+
+		return $(Loading._default.selector);
+	};
+
+	Loading.toggle = function () {
+
+		var $load = Loading._get();
+
+		$load.toggleClass('hidden');
+	};
+
+
 	var Minimal = {};
 
 	Minimal.Message = MessageFactory;
 	Minimal.Loading = Loading;
+<<<<<<< HEAD
 	Minimal.Locale = Locale;
 	Minimal.Url = Url;
+=======
+<<<<<<< HEAD
+=======
+	Minimal.Locale 	= Locale;
+>>>>>>> origin/master
+>>>>>>> origin/master
 
 	return Minimal;
 }));
