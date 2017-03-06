@@ -65,7 +65,7 @@ THE SOFTWARE.
 		},
 		offset: 0,
 		spacing: 0,
-		delay: 5000,
+		delay: 3000,
 		timer: 1000,
 		allow_dismiss: false,
 		newest_on_top: true,
@@ -515,7 +515,7 @@ THE SOFTWARE.
 
 	/*=======================================================
 	Locale class
-	Description: get, set locale by url
+	Description: get, set locale
 	=======================================================*/
 
 	var Locale = function () {
@@ -542,7 +542,7 @@ THE SOFTWARE.
 		}
 
 		return new URI(url);
-	};
+	}
 
 	Locale._chk = function (locale) {
 
@@ -553,6 +553,16 @@ THE SOFTWARE.
 		}
 
 		return true;
+	};
+
+	Locale.lcl = function () {
+
+		return this._default.locales;
+	};
+
+	Locale.flb = function () {
+
+		return this._default.fallback;
 	};
 
 	Locale.get = function (url) {
@@ -574,50 +584,91 @@ THE SOFTWARE.
 		return this._locale = this._default.fallback;
 	};
 
-	Locale.set = function (locale, url) {
+	Locale.set = function (locale) {
 
 		if (!this._chk(locale)) {
 
-			return;
+			return false;
 		}
 
-		this._locale = locale;
+		if (this._default.locales.indexOf(locale) + 1) {
 
-		if (!(this._default.locales.indexOf(locale) + 1)) {
-
-			this._locale = this._default.fallback;
+			this._locale = locale;
 		}
 
-		var uri = this._prs(url);
-		var segment = uri.segment();
-
-		if (this._locale == this._default.fallback) {
-
-			if (this._default.locales.indexOf(segment[0]) + 1) {
-			
-				segment.shift();
-				uri.segment(segment);
-
-				return this.location(uri.toString());
-			}
-		}
-
-		if (this._default.locales.indexOf(segment[0]) + 1) {
-
-			uri.segment(0, this._locale);
-
-			return this.location(uri.toString());
-		}
-
-		segment.unshift(this._locale);
-		uri.segment(segment);
-
-		this.location(uri.toString());
+		this._locale = this._default.fallback;
 	};
 
-	Locale.location = function (url) {
 
-		return location.href = url;
+	/*=======================================================
+	Url class
+	Description: get, set, redirect & url locale
+	=======================================================*/
+
+	var Url = function () {
+
+	};
+
+	Url._default = {
+
+	};
+
+	Url._prs = function (url) {
+
+		if (!url) {
+
+			return new URI();
+		}
+
+		return new URI(url);
+	};
+
+	Url.get = function () {
+
+		return location.href;
+	};
+
+	Url.asn = function (url) {
+
+		return location.assgn(url);
+	};
+
+	Url.rdr = function (url) {
+
+		return location.replace(url);
+	};
+
+	Url.lcl = function (locale, url) {
+
+		if (Locale.set(locale)) {
+
+			var uri = this._prs(url);
+			var segment = uri.segment();
+			var locales = Locale.lcl();
+
+			if (locale == Locale.flb()) {
+
+				if (locales.indexOf(segment[0]) + 1) {
+				
+					segment.shift();
+					uri.segment(segment);
+
+					return this.asn(uri.toString());
+				}
+			}
+
+			if (locales.indexOf(segment[0]) + 1) {
+
+				uri.segment(0, locale);
+
+				return this.asn(uri.toString());
+			}
+
+			segment.unshift(locale);
+			uri.segment(segment);
+
+			this.asn(uri.toString());
+		}
 	};
 
 
@@ -625,7 +676,8 @@ THE SOFTWARE.
 
 	Minimal.Message = MessageFactory;
 	Minimal.Loading = Loading;
-	Minimal.Locale 	= Locale;
+	Minimal.Locale = Locale;
+	Minimal.Url = Url;
 
 	return Minimal;
 }));
