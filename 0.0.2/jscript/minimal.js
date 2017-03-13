@@ -528,6 +528,7 @@ THE SOFTWARE.
 
 			'en',
 			'ch',
+			'jp',
 		],
 		fallback: 'en',
 	};
@@ -552,10 +553,16 @@ THE SOFTWARE.
 			return false;
 		}
 
+		if (!(this._default.locales.indexOf(locale) + 1)) {
+
+			console.error('Locale `' + locale + '` is not define');
+			return false;
+		}
+
 		return true;
 	};
 
-	Locale.lcl = function () {
+	Locale.lcs = function () {
 
 		return this._default.locales;
 	};
@@ -586,6 +593,8 @@ THE SOFTWARE.
 
 	Locale.set = function (locale) {
 
+		locale = locale.toLowerCase();
+
 		if (!this._chk(locale)) {
 
 			return false;
@@ -597,6 +606,8 @@ THE SOFTWARE.
 		}
 
 		this._locale = this._default.fallback;
+
+		return true;
 	};
 
 
@@ -630,7 +641,7 @@ THE SOFTWARE.
 
 	Url.asn = function (url) {
 
-		return location.assgn(url);
+		return location.assign(url);
 	};
 
 	Url.rdr = function (url) {
@@ -640,34 +651,33 @@ THE SOFTWARE.
 
 	Url.lcl = function (locale, url) {
 
+		locale = locale.toLowerCase();
+
 		if (Locale.set(locale)) {
 
 			var uri = this._prs(url);
 			var segment = uri.segment();
-			var locales = Locale.lcl();
+			var locales = Locale.lcs();
 
-			if (locale == Locale.flb()) {
+			if (locales.indexOf(segment[0]) + 1) {
 
-				if (locales.indexOf(segment[0]) + 1) {
+				if (locale == Locale.flb()) {
 				
 					segment.shift();
 					uri.segment(segment);
 
 					return this.asn(uri.toString());
 				}
-			}
-
-			if (locales.indexOf(segment[0]) + 1) {
 
 				uri.segment(0, locale);
 
-				return this.asn(uri.toString());
+				return this.asn(uri.toString());	
 			}
 
 			segment.unshift(locale);
 			uri.segment(segment);
 
-			this.asn(uri.toString());
+			return this.asn(uri.toString());
 		}
 	};
 
