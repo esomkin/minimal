@@ -286,14 +286,14 @@ THE SOFTWARE.
 
 		var $form = this._view.$el.find('form');
 
-		$form.before($(this._default.template));
+		$form.prepend($(this._default.template));
 
-		return $form.prev();
+		return $form.children(this._default.selector);
 	};
 
 	MessageState._get = function () {
 
-		return this._view.$el.find('form').prev(this._default.selector);
+		return this._view.$el.find('form').children(this._default.selector);
 	};
 
 	MessageState._chk = function () {
@@ -336,7 +336,10 @@ THE SOFTWARE.
 
 	MessageState.hide = function () {
 
+		var _class = this._opts.classes || this._default.classes;
+
 		this.message.addClass('hidden');
+		this.message.removeClass(_class);
 	}
 
 
@@ -535,16 +538,6 @@ THE SOFTWARE.
 
 	Locale._locale = null;
 
-	Locale._prs = function (url) {
-
-		if (!url) {
-
-			return new URI();
-		}
-
-		return new URI(url);
-	}
-
 	Locale._chk = function (locale) {
 
 		if (!locale) {
@@ -555,7 +548,7 @@ THE SOFTWARE.
 
 		if (!(this._default.locales.indexOf(locale) + 1)) {
 
-			console.error('Locale `' + locale + '` is not define');
+			console.error('Locale `' + locale + '` is not defined');
 			return false;
 		}
 
@@ -580,7 +573,7 @@ THE SOFTWARE.
 			return this._locale;
 		}
 
-		var uri = this._prs(url);
+		var uri = Url._prs(url);
 		var part = uri.segment(0);
 
 		if (this._default.locales.indexOf(part) + 1) {
@@ -589,25 +582,6 @@ THE SOFTWARE.
 		}
 
 		return this._locale = this._default.fallback;
-	};
-
-	Locale.set = function (locale) {
-
-		locale = locale.toLowerCase();
-
-		if (!this._chk(locale)) {
-
-			return false;
-		}
-
-		if (this._default.locales.indexOf(locale) + 1) {
-
-			this._locale = locale;
-		}
-
-		this._locale = this._default.fallback;
-
-		return true;
 	};
 
 
@@ -651,34 +625,151 @@ THE SOFTWARE.
 
 	Url.lcl = function (locale, url) {
 
+		if (!locale) {
+
+			locale = Locale.get();
+		}
+
 		locale = locale.toLowerCase();
 
-		if (Locale.set(locale)) {
+		if (!Locale._chk(locale)) {
 
-			var uri = this._prs(url);
-			var segment = uri.segment();
-			var locales = Locale.lcs();
+			return;
+		}
 
-			if (locales.indexOf(segment[0]) + 1) {
+		var uri = this._prs(url);
+		var segment = uri.segment();
+		var locales = Locale.lcs();
+		var fallback = Locale.flb();
 
-				if (locale == Locale.flb()) {
-				
-					segment.shift();
-					uri.segment(segment);
+		if (!(locales.indexOf(segment[0]) + 1)) {
 
-					return this.asn(uri.toString());
-				}
+			if (locale != fallback) {
 
-				uri.segment(0, locale);
-
-				return this.asn(uri.toString());	
+				segment.unshift(locale);
+				uri.segment(segment);
 			}
 
-			segment.unshift(locale);
+			return uri.toString();	
+		}
+
+		if (locale == fallback) {
+				
+			segment.shift();
 			uri.segment(segment);
 
-			return this.asn(uri.toString());
+			return uri.toString();
 		}
+
+		uri.segment(0, locale);
+
+		return uri.toString();
+	};
+
+
+	/*=======================================================
+	Storage class
+	Description: class to store values by store key
+	=======================================================*/
+
+	var Storage = function () {
+
+	};
+
+	Storage._default = {
+
+		volume: {
+
+			master: 'master',
+		},
+	};
+
+	Storage._volume = null;
+	Storage._storage = {};
+
+	Storage.vlm = function (volume) {
+
+		if (volume) {
+
+			return volume;
+		}
+
+		if (this._volume) {
+
+			return this._volume;
+		}
+
+		return this._default.volume.master;
+	};
+
+	Storage.clr = function () {
+
+		this._volume = this._default.volume.master;
+		this._storage = {};
+	};
+
+	Storage.crt = function (volume) {
+
+		this._storage[volume] = {};
+	};
+
+	Storage.chg = function (volume) {
+
+		if (!(volume in this._storage)) {
+
+			this.crt(volume);
+		}
+
+		this._volume = volume;
+
+		return this._storage[this._volume];
+	};
+
+	Storage.has = function (key) {
+
+		return this.get(key);
+	};
+
+	Storage.get = function (volume, key) {
+
+		volume = this.vlm(volume);
+
+		var _volume = this.chg(volume);
+
+		if (!(key in _volume)) {
+
+			return false;
+		}
+
+		return _volume[key];
+	};
+
+	Storage.set = function (volume, key, value) {
+
+		volume = this.vlm(volume);
+
+		var _volume = this.chg(volume);
+
+		_volume[key] = value;
+	};
+
+	Storage.rmv = function (volume, key) {
+
+		volume = this.vlm(volume);
+
+		var _volume = this.chg(volume);
+
+		delete _volume[key];
+	};
+
+
+	/*=======================================================
+	Util class
+	Description: some utilites
+	=======================================================*/
+
+	var Util = function () {
+
 	};
 
 
@@ -688,6 +779,8 @@ THE SOFTWARE.
 	Minimal.Loading = Loading;
 	Minimal.Locale = Locale;
 	Minimal.Url = Url;
+	Minimal.Storage = Storage;
+	Minimal.Util = Util;
 
 	return Minimal;
 }));
